@@ -8,6 +8,9 @@ body {
 body.chatting #crosshair-hud {
   opacity: 0.3;
   pointer-events: none;
+  width: 2vw;
+  height: 2vw;
+  border: 2px solid white;
 }
 canvas {
   display: block;

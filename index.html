@@ -1,116 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nguyen Dac Hai | Interactive Portfolio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
-</head>
-<body>
-  <div id="info-overlay">
-    <h1>Interactive Portfolio</h1>
-    <p>You are about to enter a 3D space. Explore the environment to discover my work.</p>
-    <p style="font-weight: 600; margin-top: 20px;">Click to Begin</p>
-    <p>(W, A, S, D = Move | MOUSE = Look | ESC = Unlock Mouse)</p>
-  </div>
-
-  <div id="crosshair-hud" style="display: none;">
-    <div class="crosshair">+</div>
-    <p>Follow the path and approach a sphere to learn more</p>
-  </div>
-
-  <div id="project-panel">
-    <h2 id="panel-title">Project Title</h2>
-    <p id="panel-description">Project description goes here.</p>
-    <div id="panel-tags" class="tags"></div>
-  </div>
-
-  <div id="chat-box">
-    <div id="chat-messages">
-      <div id="typing-indicator"><em>Gemini is typing...</em></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nguyen Dac Hai | Interactive Portfolio</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div id="info-overlay">
+      <h1>Interactive Portfolio</h1>
+      <p>
+        You are about to enter a 3D space. Explore the environment to discover
+        my work.
+      </p>
+      <p style="font-weight: 600; margin-top: 20px">Click to Begin</p>
+      <p>(W, A, S, D = Move | MOUSE = Look | ESC = Unlock Mouse)</p>
     </div>
-    <form id="chat-form">
-      <input type="text" id="chat-input" placeholder="Ask the AI..." autocomplete="off" />
-    </form>
-  </div>
 
-  <audio id="bg-music" loop>
-    <source src="assets/audio/poolcore.mp3" type="audio/mpeg" />
-  </audio>
+    <div id="project-panel">
+      <h2 id="panel-title">Project Title</h2>
+      <p id="panel-description">Project description goes here.</p>
+      <div id="panel-tags" class="tags"></div>
+    </div>
 
-  <audio id="water-sound" loop>
-    <source src="assets/audio/water.mp3" type="audio/mpeg" />
-  </audio>
+    <audio id="bg-music" loop>
+      <source src="assets/audio/poolcore.mp3" type="audio/mpeg" />
+    </audio>
 
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <audio id="water-sound" loop>
+      <source src="assets/audio/water.mp3" type="audio/mpeg" />
+    </audio>
 
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
-
-  <script type="module" src="src/main.js"></script>
-  <script>
-    let isTyping = false;
-
-    // Wait for DOM and ensure chat elements are bound
-    window.addEventListener("DOMContentLoaded", () => {
-      const chatBox = document.getElementById("chat-box");
-      const chatForm = document.getElementById("chat-form");
-      const chatInput = document.getElementById("chat-input");
-      const chatMessages = document.getElementById("chat-messages");
-
-      chatInput.addEventListener("focus", () => {
-        isTyping = true;
-      });
-
-    chatInput.addEventListener("blur", () => {
-      isTyping = false;
-    });
-    // 👇 Autofocus when chat box becomes visible
-      const observer = new MutationObserver(() => {
-        const isVisible = chatBox && window.getComputedStyle(chatBox).display !== 'none';
-        if (isVisible) {
-          chatInput.focus();
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
-      });
-      observer.observe(chatBox, { attributes: true, attributeFilter: ['style'] });
-
-      if (chatForm) {
-        console.log(chatForm);
-        chatInput.focus();
-        chatForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const userMessage = chatInput.value.trim();
-          if (!userMessage) return;
-
-          chatMessages.innerHTML += `<div><strong>You:</strong> ${userMessage}</div>`;
-          chatInput.value = "";
-
-          try {
-            const res = await fetch("https://portfolio-server-c07i.onrender.com/api/chat", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ message: userMessage })
-            });
-
-            const data = await res.json();
-            chatMessages.innerHTML += `<div><strong>Gemini:</strong> ${data.reply}</div>`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-          } catch (err) {
-            console.error(err);
-            chatMessages.innerHTML += `<div><em>⚠️ Could not reach backend</em></div>`;
-          }
-        });
       }
-    });
-
-  </script>
-</body>
+    </script>
+    <script type="module" src="src/main.js"></script>
+  </body>
 </html>

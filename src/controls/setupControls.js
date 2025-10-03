@@ -1,15 +1,10 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import nipplejs from 'nipplejs';
+import { isMobile } from '../utils/deviceCheck.js';
 
 export function setupControls(camera, rendererDomElement, curve, pathMesh, fallbackGround) {
-  const controls = new PointerLockControls(camera, rendererDomElement);
 
-  const keys = {
-    KeyW: false,
-    KeyA: false,
-    KeyS: false,
-    KeyD: false
-  };
 
   const playerHeight = 1.8;
   const velocity = new THREE.Vector3();
@@ -24,6 +19,19 @@ export function setupControls(camera, rendererDomElement, curve, pathMesh, fallb
   if (initialHits.length > 0) {
     camera.position.y = initialHits[0].point.y + playerHeight;
   }
+
+   if (!isMobile) {
+    // ---------- DESKTOP MODE ----------
+  const controls = new PointerLockControls(camera, rendererDomElement);
+
+  const keys = {
+    KeyW: false,
+    KeyA: false,
+    KeyS: false,
+    KeyD: false
+  };
+
+  
 
   // Key events
   document.addEventListener('keydown', (e) => keys[e.code] = true);
@@ -108,4 +116,65 @@ export function setupControls(camera, rendererDomElement, curve, pathMesh, fallb
     controls,
     update
   };
+} else {
+    // ---------- MOBILE MODE ----------
+    const overlay = document.getElementById('info-overlay');
+    if (overlay) overlay.style.display = 'none';
+    let joystickVec = { x: 0, y: 0 };
+    let lastTouchX = null, lastTouchY = null;
+
+    // Add joystick
+    const zone = document.createElement('div');
+    zone.style.position = 'absolute';
+    zone.style.bottom = '20px';
+    zone.style.left = '20px';
+    zone.style.width = '120px';
+    zone.style.height = '120px';
+    zone.style.zIndex = '200';
+    document.body.appendChild(zone);
+
+    const joystick = nipplejs.create({
+      zone,
+      mode: 'static',
+      position: { left: '60px', bottom: '60px' },
+      color: 'white'
+    });
+
+    joystick.on('move', (evt, data) => {
+      joystickVec = data.vector || { x: 0, y: 0 };
+    });
+    joystick.on('end', () => { joystickVec = { x: 0, y: 0 }; });
+
+    // Swipe look
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+      }
+    });
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && lastTouchX !== null) {
+        const dx = e.touches[0].clientX - lastTouchX;
+        const dy = e.touches[0].clientY - lastTouchY;
+        camera.rotation.y -= dx * 0.002;
+        camera.rotation.x -= dy * 0.002;
+        camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+      }
+    });
+    document.addEventListener('touchend', () => { lastTouchX = null; lastTouchY = null; });
+
+    function update(delta) {
+      // forward/back
+      camera.position.z -= joystickVec.y * delta * 5;
+      // strafe left/right
+      camera.position.x += joystickVec.x * delta * 5;
+    }
+
+    return { controls: null, update };
+  }
+
 }
+
+
